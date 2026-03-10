@@ -1,0 +1,18 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Ընտրեք դեր</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="role-content ion-padding">
+  <div class="role-card">
+    <h2>Ձեր դերը հավելվածում</h2>
+    <p>Ընտրեք, թե ինչպես եք ցանկանում օգտագործել հարթակը։</p>
+    <ion-button expand="block" [disabled]="submitting" (click)="select('customer')">
+      Ես հաճախորդ եմ
+    </ion-button>
+    <ion-button expand="block" fill="outline" [disabled]="submitting" (click)="select('helper')">
+      Ես օգնական եմ
+    </ion-button>
+  </div>
+</ion-content>

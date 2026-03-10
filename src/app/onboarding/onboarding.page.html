@@ -1,0 +1,26 @@
+<ion-content class="onboarding-content" fullscreen>
+  <div class="slides-wrapper">
+    <swiper-container [loop]="false" [allowTouchMove]="true" [speed]="320" (swiperslidechange)="onSlideChanged($event)">
+      <swiper-slide *ngFor="let slide of slides">
+        <div class="slide">
+          <div class="icon-wrapper">
+            <ion-icon class="main-icon" [name]="slide.icon"></ion-icon>
+            <ion-icon *ngIf="slide.accentIcon" class="accent-icon" [name]="slide.accentIcon"></ion-icon>
+          </div>
+          <h1>{{ slide.title }}</h1>
+          <p>{{ slide.text }}</p>
+        </div>
+      </swiper-slide>
+    </swiper-container>
+  </div>
+
+  <div class="dots">
+    <span *ngFor="let slide of slides; let i = index" class="dot" [class.active]="i === currentIndex"></span>
+  </div>
+
+  
+  <div class="bottom-actions ion-padding">
+    <ion-button expand="block" fill="outline" shape="round" (click)="onLogin()">Մուտք</ion-button>
+    <ion-button expand="block" shape="round" (click)="onRegister()">Գրանցում</ion-button>
+  </div>
+</ion-content>

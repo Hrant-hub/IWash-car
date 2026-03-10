@@ -1,0 +1,47 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Մուտք</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="auth-content">
+  <form class="auth-card" [formGroup]="form" (ngSubmit)="onSubmit()">
+    <ion-list>
+      <ion-item>
+        <ion-input
+          type="email"
+          label="Էլ. փոստ"
+          labelPlacement="stacked"
+          placeholder="example@mail.com"
+          formControlName="email"
+        ></ion-input>
+      </ion-item>
+      @if (form.get('email')?.touched && form.get('email')?.invalid) {
+        <ion-note color="danger">
+          {{ form.get('email')?.errors?.['required'] ? 'Էլ. փոստը պարտադիր է' : 'Էլ. փոստի ձևաչափը սխալ է' }}
+        </ion-note>
+      }
+
+      <ion-item>
+        <ion-input
+          type="password"
+          label="Գաղտնաբառ"
+          labelPlacement="stacked"
+          placeholder="Մուտքագրեք գաղտնաբառը"
+          formControlName="password"
+        ></ion-input>
+      </ion-item>
+      @if (form.get('password')?.touched && form.get('password')?.invalid) {
+        <ion-note color="danger">Գաղտնաբառը պարտադիր է</ion-note>
+      }
+    </ion-list>
+
+    <ion-button type="submit" expand="block" [disabled]="form.invalid || submitting">
+      {{ submitting ? 'Մուտք է կատարվում...' : 'Մուտք' }}
+    </ion-button>
+    <div class="divider">կամ</div>
+    <div id="google-btn"></div>
+
+    <ion-button routerLink="/auth/register" expand="block" fill="clear">Ստեղծել հաշիվ</ion-button>
+  </form>
+</ion-content>

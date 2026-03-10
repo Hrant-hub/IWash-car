@@ -1,0 +1,86 @@
+<ion-content class="complete-profile-content">
+  <div class="container ion-padding">
+    <h1>Լրացրեք ձեր տվյալները</h1>
+    <p>Նախքան հաճախորդի վահանակ մուտք գործելը լրացրեք մեքենայի տվյալները։</p>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="section-label">Մեքենայի տվյալներ</div>
+
+      <ion-item lines="full" class="select-item">
+        <ion-label position="stacked">Մեքենայի ապրանքանիշ</ion-label>
+        <ion-select
+          formControlName="brandId"
+          interface="modal"
+          placeholder="Ընտրեք ապրանքանիշը"
+          aria-label="Մեքենայի ապրանքանիշ"
+        >
+          @for (brand of brands; track brand.id) {
+            <ion-select-option [value]="brand.id">{{ brand.name }}</ion-select-option>
+          }
+        </ion-select>
+        <ion-icon name="car-sport-outline" slot="end" color="medium"></ion-icon>
+      </ion-item>
+      <ion-note class="field-hint" color="medium">Ընտրեք ցանկից․ ազատ մուտքագրում հասանելի չէ</ion-note>
+      @if (loadingBrands) {
+        <div class="loading-row">
+          <ion-spinner name="crescent"></ion-spinner>
+          <ion-note color="medium">Բեռնվում են ապրանքանիշները...</ion-note>
+        </div>
+      } @else if (!brands.length) {
+        <ion-note color="warning">Ապրանքանիշներ չեն գտնվել։</ion-note>
+      }
+
+      <ion-item lines="full" class="select-item">
+        <ion-label position="stacked">Մեքենայի մոդել</ion-label>
+        <ion-select
+          formControlName="modelId"
+          interface="modal"
+          placeholder="Ընտրեք մոդելը"
+          [disabled]="!form.get('brandId')?.value || loadingModels"
+          aria-label="Մեքենայի մոդել"
+        >
+          @for (model of models; track model.id) {
+            <ion-select-option [value]="model.id">{{ model.name }}</ion-select-option>
+          }
+        </ion-select>
+        <ion-icon name="list-outline" slot="end" color="medium"></ion-icon>
+      </ion-item>
+      @if (!form.get('brandId')?.value) {
+        <ion-note class="field-hint" color="medium">Սկզբում ընտրեք ապրանքանիշը, հետո մոդելը</ion-note>
+      }
+      @if (loadingModels) {
+        <div class="loading-row">
+          <ion-spinner name="crescent"></ion-spinner>
+          <ion-note color="medium">Բեռնվում են մոդելները...</ion-note>
+        </div>
+      } @else if (form.get('brandId')?.value && !models.length) {
+        <ion-note color="warning">Այս ապրանքանիշի համար մոդելներ չկան։</ion-note>
+      }
+
+      <ion-item lines="full">
+        <ion-label position="stacked">Համարանիշ</ion-label>
+        <ion-input
+          formControlName="plateNumber"
+          type="text"
+          placeholder="15OB105"
+          (ionInput)="onPlateInput($event)"
+        ></ion-input>
+      </ion-item>
+
+      <ion-text color="danger" *ngIf="form.get('plateNumber')?.touched && form.get('plateNumber')?.invalid">
+        <p class="validation-text">Համարանիշը պարտադիր է և պետք է լինի առնվազն 5 նիշ։</p>
+      </ion-text>
+
+      <ion-button
+        type="submit"
+        expand="block"
+        shape="round"
+        class="continue-btn"
+        [disabled]="form.invalid || submitting"
+      >
+        Շարունակել
+      </ion-button>
+    </form>
+  </div>
+</ion-content>
+

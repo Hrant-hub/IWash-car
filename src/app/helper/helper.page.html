@@ -1,0 +1,128 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Օգնական</ion-title>
+    <ion-buttons slot="end">
+      <ion-button routerLink="/helper-settings">Կարգավորումներ</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  @if ((requestState$ | async); as state) {
+      @switch (state.status) {
+        @case ('pending') {
+          @if (isRequestForMe(state)) {
+            <div class="request-card">
+              <ion-label class="title">Նոր պատվեր</ion-label>
+              <p>Հասցե՝ {{ state.customerDetails?.address || '-' }}</p>
+              <p>Մեքենա՝ {{ state.customerDetails?.carModel || '-' }}</p>
+              <p>Համարանիշ՝ {{ state.customerDetails?.plateNumber || '-' }}</p>
+              <p>Վճարում՝ {{ state.customerDetails?.paymentMethod || '-' }}</p>
+              <div class="map-wrapper">
+                <app-map [center]="helperMapCenter" [zoom]="13" [markers]="helperMapMarkers"></app-map>
+              </div>
+              <div class="buttons">
+                <ion-button color="success" expand="block" (click)="accept()">Ընդունել</ion-button>
+                <ion-button color="medium" expand="block" fill="outline" (click)="reject()">Մերժել</ion-button>
+              </div>
+            </div>
+          } @else {
+            <div class="empty-state">
+              <ion-note color="medium">Սպասում ենք պատվերի...</ion-note>
+            </div>
+          }
+        }
+
+        @case ('assigned') {
+          <div class="request-card">
+            <ion-label class="title">Ճանապարհին է դեպի հաճախորդ</ion-label>
+            <p>Հասցե՝ {{ state.customerDetails?.address || '-' }}</p>
+            <p>Մեքենա՝ {{ state.customerDetails?.carModel || '-' }}</p>
+            <p>Համարանիշ՝ {{ state.customerDetails?.plateNumber || '-' }}</p>
+            <p>Վճարում՝ {{ state.customerDetails?.paymentMethod || '-' }}</p>
+            <div class="map-wrapper">
+              <app-map
+                [center]="helperMapCenter"
+                [zoom]="13"
+                [markers]="helperMapMarkers"
+                [routePoints]="helperRoutePoints"
+              ></app-map>
+            </div>
+            <div class="chat-box">
+              <ion-label class="chat-title">Զրույց հաճախորդի հետ</ion-label>
+              <div class="chat-messages">
+                @for (msg of state.chatMessages || []; track msg.timestamp) {
+                  <div class="chat-row" [class.own]="isOwnMessage(msg.senderId)">
+                    <div class="chat-bubble">{{ msg.text }}</div>
+                  </div>
+                }
+              </div>
+              <div class="chat-input">
+                <ion-input
+                  [(ngModel)]="chatText"
+                  placeholder="Գրեք հաղորդագրություն"
+                  (keyup.enter)="sendChat()"
+                ></ion-input>
+                <ion-button size="small" (click)="sendChat()" [disabled]="!chatText.trim()">Ուղարկել</ion-button>
+              </div>
+            </div>
+            <div class="buttons">
+              <ion-button color="warning" expand="block" (click)="reached()">Հասա</ion-button>
+            </div>
+          </div>
+        }
+
+        @case ('reached') {
+          <div class="request-card">
+            <ion-label class="title">Հաճախորդի մոտ</ion-label>
+            <p>Հասցե՝ {{ state.customerDetails?.address || '-' }}</p>
+            <p>Մեքենա՝ {{ state.customerDetails?.carModel || '-' }}</p>
+            <p>Համարանիշ՝ {{ state.customerDetails?.plateNumber || '-' }}</p>
+            <p>Վճարում՝ {{ state.customerDetails?.paymentMethod || '-' }}</p>
+            <div class="map-wrapper">
+              <app-map [center]="helperMapCenter" [zoom]="13" [markers]="helperMapMarkers"></app-map>
+            </div>
+            <div class="chat-box">
+              <ion-label class="chat-title">Զրույց հաճախորդի հետ</ion-label>
+              <div class="chat-messages">
+                @for (msg of state.chatMessages || []; track msg.timestamp) {
+                  <div class="chat-row" [class.own]="isOwnMessage(msg.senderId)">
+                    <div class="chat-bubble">{{ msg.text }}</div>
+                  </div>
+                }
+              </div>
+              <div class="chat-input">
+                <ion-input
+                  [(ngModel)]="chatText"
+                  placeholder="Գրեք հաղորդագրություն"
+                  (keyup.enter)="sendChat()"
+                ></ion-input>
+                <ion-button size="small" (click)="sendChat()" [disabled]="!chatText.trim()">Ուղարկել</ion-button>
+              </div>
+            </div>
+            <div class="buttons">
+              <ion-button color="success" expand="block" (click)="done()">Ավարտել</ion-button>
+            </div>
+          </div>
+        }
+
+        @case ('completed') {
+          <div class="assigned-state">
+            <ion-note color="success">Պատվերն ավարտված է։</ion-note>
+          </div>
+        }
+
+        @case ('cancelled') {
+          <div class="assigned-state">
+            <ion-note color="danger">Հաճախորդը չեղարկել է պատվերը։</ion-note>
+          </div>
+        }
+
+        @default {
+          <div class="empty-state">
+            <ion-note color="medium">Սպասում ենք պատվերի...</ion-note>
+          </div>
+        }
+      }
+  }
+</ion-content>

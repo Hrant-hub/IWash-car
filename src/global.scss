@@ -1,0 +1,121 @@
+
+
+
+@import "@ionic/angular/css/core.css";
+
+
+@import "@ionic/angular/css/normalize.css";
+@import "@ionic/angular/css/structure.css";
+@import "@ionic/angular/css/typography.css";
+@import "@ionic/angular/css/display.css";
+
+
+@import "@ionic/angular/css/padding.css";
+@import "@ionic/angular/css/float-elements.css";
+@import "@ionic/angular/css/text-alignment.css";
+@import "@ionic/angular/css/text-transformation.css";
+@import "@ionic/angular/css/flex-utils.css";
+
+
+
+
+
+@import "@ionic/angular/css/palettes/dark.system.css";
+
+:root {
+  --ion-color-primary: #ff0033;
+  --ion-color-primary-rgb: 255, 0, 51;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #e0002d;
+  --ion-color-primary-tint: #ff1a47;
+  --yt-surface: #ffffff;
+  --yt-bg: #f8f9fc;
+  --yt-text: #0f172a;
+  --yt-muted: #64748b;
+  --yt-card-radius: 16px;
+  --yt-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+  --yt-border: #eceff5;
+}
+
+ion-content {
+  --background: var(--yt-bg);
+}
+
+ion-toolbar {
+  --background: rgba(255, 255, 255, 0.96);
+  --border-color: transparent;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 1px 0 rgba(2, 6, 23, 0.06);
+}
+
+ion-title {
+  color: var(--yt-text);
+  font-weight: 800;
+  letter-spacing: 0.2px;
+}
+
+ion-card {
+  border-radius: var(--yt-card-radius);
+  box-shadow: var(--yt-shadow);
+  border: 1px solid var(--yt-border);
+}
+
+ion-card-title {
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+ion-card-subtitle {
+  color: var(--yt-muted);
+  font-weight: 600;
+}
+
+ion-button {
+  --border-radius: 14px;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+ion-button:active {
+  transform: translateY(1px);
+}
+
+ion-item {
+  --highlight-color-focused: var(--ion-color-primary);
+}
+
+h1, h2, h3 {
+  color: var(--yt-text);
+  font-weight: 800;
+}
+
+p, ion-note, ion-label {
+  color: var(--yt-muted);
+}
+
+body.hide-customer-overlays ion-modal.dashboard-sheet-modal,
+body.hide-customer-overlays ion-modal.payment-sheet-modal,
+body.hide-customer-overlays ion-modal.location-picker-modal,
+body.hide-customer-overlays-during-nav ion-modal.dashboard-sheet-modal,
+body.hide-customer-overlays-during-nav ion-modal.payment-sheet-modal,
+body.hide-customer-overlays-during-nav ion-modal.location-picker-modal {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+body.hide-customer-overlays .dashboard-sheet-modal,
+body.hide-customer-overlays .payment-sheet-modal,
+body.hide-customer-overlays .location-picker-modal,
+body.hide-customer-overlays-during-nav .dashboard-sheet-modal,
+body.hide-customer-overlays-during-nav .payment-sheet-modal,
+body.hide-customer-overlays-during-nav .location-picker-modal {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}

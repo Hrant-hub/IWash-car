@@ -1,0 +1,68 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Գրանցում</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="auth-content">
+  <form class="auth-card" [formGroup]="form" (ngSubmit)="onSubmit()">
+    <ion-list>
+      <ion-item>
+        <ion-input
+          type="email"
+          label="Էլ. փոստ"
+          labelPlacement="stacked"
+          placeholder="example@mail.com"
+          formControlName="email"
+        ></ion-input>
+      </ion-item>
+      @if (form.get('email')?.touched && form.get('email')?.invalid) {
+        <ion-note color="danger">
+          {{ form.get('email')?.errors?.['required'] ? 'Էլ. փոստը պարտադիր է' : 'Էլ. փոստի ձևաչափը սխալ է' }}
+        </ion-note>
+      }
+
+      <ion-item>
+        <ion-input
+          type="password"
+          label="Գաղտնաբառ"
+          labelPlacement="stacked"
+          placeholder="Առնվազն 6 նիշ"
+          formControlName="password"
+        ></ion-input>
+      </ion-item>
+      @if (form.get('password')?.touched && form.get('password')?.invalid) {
+        <ion-note color="danger">Գաղտնաբառը պետք է լինի առնվազն 6 նիշ</ion-note>
+      }
+
+      <ion-item>
+        <ion-input
+          type="password"
+          label="Կրկնեք գաղտնաբառը"
+          labelPlacement="stacked"
+          placeholder="Կրկին մուտքագրեք գաղտնաբառը"
+          formControlName="confirmPassword"
+        ></ion-input>
+      </ion-item>
+      @if (form.hasError('passwordMismatch') && form.get('confirmPassword')?.touched) {
+        <ion-note color="danger">Գաղտնաբառերը չեն համընկնում</ion-note>
+      }
+
+      <ion-item lines="none" class="terms-row">
+        <ion-checkbox slot="start" formControlName="termsAccepted"></ion-checkbox>
+        <ion-label>
+          Համաձայն եմ
+          <a class="terms-link" routerLink="/terms">Պայմաններին և ծառայություններին</a>
+        </ion-label>
+      </ion-item>
+      @if (form.get('termsAccepted')?.invalid && form.get('termsAccepted')?.touched) {
+        <ion-note color="danger">Պետք է ընդունեք պայմաններն ու ծառայությունները</ion-note>
+      }
+    </ion-list>
+
+    <ion-button type="submit" expand="block" [disabled]="form.invalid || submitting">
+      {{ submitting ? 'Գրանցում է կատարվում...' : 'Գրանցվել' }}
+    </ion-button>
+    <ion-button routerLink="/auth/login" expand="block" fill="clear">Արդեն ունե՞ք հաշիվ</ion-button>
+  </form>
+</ion-content>

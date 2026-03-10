@@ -1,0 +1,98 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Օգնականի որոնում</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding search-helper-content">
+  @if ((state.status === 'assigned' || state.status === 'reached') && state.assignedHelper) {
+    <div class="map-wrapper">
+      <app-map [center]="mapCenter" [zoom]="13" [markers]="markers"></app-map>
+    </div>
+    <div class="assigned-card">
+      <h2>
+        {{
+          state.status === 'reached'
+            ? state.assignedHelper.name + ' հասել է ձեր հասցե'
+            : state.assignedHelper.name + ' ճանապարհին է'
+        }}
+      </h2>
+      @if (state.status !== 'reached') {
+        <p>ETA՝ {{ state.assignedHelper.etaMinutes }} րոպե</p>
+        <p>Հեռավորություն՝ {{ state.assignedHelper.distanceKm | number:'1.1-2' }} կմ</p>
+      }
+      <p>Մեքենա՝ {{ state.customerDetails?.carModel || payload.carModel || '-' }}</p>
+      <p>Համարանիշ՝ {{ state.customerDetails?.plateNumber || '-' }}</p>
+      <p>Հասցե՝ {{ state.customerDetails?.address || payload.selectedLocation?.address || '-' }}</p>
+      <p>Վճարում՝ {{ state.customerDetails?.paymentMethod || '-' }}</p>
+      @if (canCancelOrder) {
+        <ion-button expand="block" color="danger" fill="outline" (click)="cancelOrder()">
+          Չեղարկել պատվերը
+        </ion-button>
+      }
+      <div class="chat-box">
+        <ion-label class="chat-title">Զրույց օգնականի հետ</ion-label>
+        <div class="chat-messages">
+          @for (msg of state.chatMessages || []; track msg.timestamp) {
+            <div class="chat-row" [class.own]="isOwnMessage(msg.senderId)">
+              <div class="chat-bubble">{{ msg.text }}</div>
+            </div>
+          }
+        </div>
+        <div class="chat-input">
+          <ion-input
+            [(ngModel)]="chatText"
+            placeholder="Գրեք հաղորդագրություն"
+            (keyup.enter)="sendChat()"
+          ></ion-input>
+          <ion-button size="small" (click)="sendChat()" [disabled]="!chatText.trim()">Ուղարկել</ion-button>
+        </div>
+      </div>
+    </div>
+  } @else if (state.status === 'completed') {
+    <div class="center-box">
+      <ion-icon name="checkmark-circle" color="success" style="font-size: 42px;"></ion-icon>
+      <h2>Պատվերը ավարտված է</h2>
+      <p>Օգնականը նշել է պատվերը որպես ավարտված։</p>
+      <ion-button expand="block" (click)="completeAndBack()">
+        Վերադառնալ հաճախորդի էջ
+      </ion-button>
+    </div>
+  } @else if (state.status === 'cancelled') {
+    <div class="center-box">
+      <ion-icon name="close-circle" color="danger" style="font-size: 42px;"></ion-icon>
+      <h2>Պատվերը չեղարկվել է</h2>
+      <p>Ձեր պատվերը հաջողությամբ չեղարկվել է։</p>
+      <ion-button expand="block" (click)="completeAndBack()">
+        Վերադառնալ հաճախորդի էջ
+      </ion-button>
+    </div>
+  } @else if (state.status === 'no_helpers') {
+    <div class="center-box">
+      <ion-note color="danger">Այս պահին հասանելի օգնական չկա։</ion-note>
+    </div>
+  } @else {
+    <div class="center-box">
+      <ion-spinner name="crescent"></ion-spinner>
+      <h2>Փնտրում ենք հասանելի օգնական...</h2>
+      <p>Մեքենա՝ {{ payload.carModel || '-' }}</p>
+      <p>Հասցե՝ {{ payload.selectedLocation?.address || '-' }}</p>
+      <p>
+        Վճարում՝
+        {{
+          payload.selectedPaymentMethod?.type === 'cash'
+            ? 'Կանխիկ'
+            : payload.selectedPaymentMethod?.type === 'card'
+              ? 'Քարտ'
+              : '-'
+        }}
+      </p>
+      @if (canCancelOrder) {
+        <ion-button expand="block" color="danger" fill="outline" (click)="cancelOrder()">
+          Չեղարկել պատվերը
+        </ion-button>
+      }
+    </div>
+  }
+</ion-content>
+

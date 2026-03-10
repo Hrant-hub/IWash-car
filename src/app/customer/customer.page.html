@@ -1,0 +1,355 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button color="danger" fill="clear" (click)="logout()" aria-label="Logout">
+        <ion-icon name="log-out-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" aria-label="Settings" (click)="goToCustomerSettings()">
+        <ion-icon name="settings-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="map-wrapper" [style.height.px]="mapHeightPx">
+    <app-map
+      [center]="mapCenter"
+      [zoom]="14"
+      [markers]="mapMarkers"
+      [refreshToken]="mapHeightPx"
+      (mapClick)="onMainMapClick($event)"
+    ></app-map>
+    @if (resolvingLocation) {
+      <div style="position:absolute;left:50%;top:12px;transform:translateX(-50%);z-index:12;display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:rgba(17,24,39,.84);color:#fff;">
+        <ion-spinner name="crescent"></ion-spinner>
+        <span>Տեղադրությունը թարմացվում է...</span>
+      </div>
+    }
+  </div>
+
+  @if (loading) {
+    <div class="loading-overlay">
+      <ion-spinner name="crescent"></ion-spinner>
+      <ion-label>Ձեր տեղադրությունը բեռնվում է...</ion-label>
+    </div>
+  }
+
+  @if (error) {
+    <ion-note color="warning">{{ error }}</ion-note>
+  }
+
+  @if (isCustomerDashboardRoute) {
+    <ion-modal
+      #dashboardSheetModal
+      [isOpen]="dashboardSheetOpen && isCustomerDashboardRoute"
+      cssClass="dashboard-sheet-modal"
+      [initialBreakpoint]="0.48"
+      [breakpoints]="[0.24, 0.48, 0.9]"
+      [handle]="true"
+      [showBackdrop]="false"
+      [canDismiss]="false"
+      (ionBreakpointDidChange)="onDashboardSheetBreakpointChanged($event)"
+    >
+      <ng-template>
+        <ion-content class="dashboard-sheet-content" [scrollY]="true">
+          <div class="actions">
+            @switch (requestState.status) {
+            @case ('idle') {
+              @if (resolvingLocation) {
+                <div class="location-changing-state">
+                  <ion-spinner name="crescent"></ion-spinner>
+                  <ion-label>Տեղադրությունը փոխվում է...</ion-label>
+                </div>
+              } @else {
+                <div class="compact-search">
+                  <div class="compact-search-input">
+                    <ion-icon name="search-outline" color="medium"></ion-icon>
+                    <ion-input
+                      placeholder="search"
+                      [(ngModel)]="manualAddress"
+                      (ionInput)="onManualAddressInput($event)"
+                    ></ion-input>
+                  </div>
+                  @if (placeSuggestions.length) {
+                    <div class="place-suggestions">
+                      @for (suggestion of placeSuggestions; track suggestion.placeId) {
+                        <button
+                          type="button"
+                          class="place-suggestion-item"
+                          (click)="selectPlaceSuggestion(suggestion)"
+                        >
+                          {{ suggestion.description }}
+                        </button>
+                      }
+                    </div>
+                  }
+                </div>
+
+                @if (!isCompactSheet) {
+                  <div class="selection-section" data-tour="car-selector">
+                    <h3>Ընտրեք մեքենա</h3>
+                    <div class="car-list">
+                      @for (car of savedCars; track car.id) {
+                        <button
+                          type="button"
+                          class="car-card"
+                          [class.selected]="selectedCarId === car.id"
+                          (click)="selectCar(car.id)"
+                        >
+                          <div class="car-model">{{ car.model }}</div>
+                          <div class="car-plate">{{ car.plateNumber }}</div>
+                        </button>
+                      }
+                    </div>
+                  </div>
+                }
+
+                <div class="selection-section" data-tour="location-selector">
+                  <h3>{{ isCompactSheet ? 'Ընտրված վայր' : 'Ընտրեք վայր' }}</h3>
+                  @if (!isCompactSheet && savedLocations.length) {
+                    <div class="place-suggestions">
+                      @for (loc of savedLocations; track loc.id) {
+                        <button type="button" class="place-suggestion-item" (click)="selectSavedLocation(loc)">
+                          <strong>{{ loc.label }}</strong><br />
+                          <span>{{ loc.address }}</span>
+                        </button>
+                      }
+                    </div>
+                  }
+                  @if (selectedLocation) {
+                    <ion-note [color]="resolvingLocation ? 'warning' : 'success'">
+                      {{ resolvingLocation ? 'Տեղադրությունը թարմացվում է...' : 'Ընտրված է՝ ' + selectedLocation.address }}
+                    </ion-note>
+                  } @else {
+                    <ion-note color="medium">Քարտեզի վրա սեղմելով ընտրեք տեղադրություն։</ion-note>
+                  }
+                </div>
+
+                <ion-button
+                  data-tour="request-help"
+                  expand="block"
+                  color="primary"
+                  (click)="requestHelp()"
+                  [disabled]="!isRequestEnabled"
+                >
+                  Պատվիրել օգնություն
+                </ion-button>
+                <ion-note class="payment-hint" color="medium" data-tour="payment-hint">
+                  Վճարման եղանակը կընտրեք հաջորդ քայլում։
+                </ion-note>
+              }
+            }
+            @case ('matching') {
+              <div class="status-row">
+                <span class="status-inline">
+                  <ion-spinner name="crescent"></ion-spinner>
+                  <ion-label>Փնտրում ենք օգնական...</ion-label>
+                </span>
+              </div>
+            }
+            @case ('pending') {
+              <div class="status-row">
+                @if (requestState.lastTimeout) {
+                  <ion-label color="warning">Օգնականը չի արձագանքել, փորձում ենք հաջորդին...</ion-label>
+                  <ion-label>Սպասում ենք {{ requestState.targetHelper?.name }}-ին...</ion-label>
+                } @else {
+                  <span class="status-inline">
+                    <ion-spinner name="crescent"></ion-spinner>
+                    <ion-label>Սպասում ենք {{ requestState.targetHelper?.name }}-ի պատասխանին...</ion-label>
+                  </span>
+                }
+              </div>
+            }
+            @case ('assigned') {
+              <div class="eta-card">
+                <ion-label>{{ requestState.assignedHelper?.name }}-ը ճանապարհին է։ Մոտ ETA՝ {{ requestState.assignedHelper?.etaMinutes }} րոպե</ion-label>
+              </div>
+              <ion-button expand="block" fill="outline" (click)="resetRequest()">Ավարտել</ion-button>
+            }
+            @case ('no_helpers') {
+              <ion-note color="danger">Հասանելի օգնականներ չկան։ Փորձեք ավելի ուշ։</ion-note>
+              <ion-button expand="block" (click)="resetRequest()">Կրկնել</ion-button>
+            }
+            }
+          </div>
+        </ion-content>
+      </ng-template>
+    </ion-modal>
+  }
+
+  @if (tourActive) {
+    <div class="tour-overlay" (click)="onTourBackdropClick($event)">
+      <div class="tour-dim"></div>
+      <div class="tour-highlight" [ngStyle]="highlightStyle"></div>
+      <div class="tour-tooltip" [ngStyle]="tooltipStyle" role="dialog" aria-live="polite">
+        <p>{{ currentTourText }}</p>
+        <div class="tour-actions">
+          <button type="button" class="tour-skip" (click)="skipTour()">Բաց թողնել</button>
+          <button type="button" class="tour-next" (click)="nextTourStep()">
+            {{ isLastTourStep ? 'Ավարտել' : 'Հաջորդը' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</ion-content>
+
+@if (isCustomerDashboardRoute) {
+  <ion-modal
+    #paymentSheetModal
+    [isOpen]="paymentModalOpen && isCustomerDashboardRoute"
+    cssClass="payment-sheet-modal"
+    [initialBreakpoint]="0.9"
+    [breakpoints]="[0, 0.9]"
+    [canDismiss]="true"
+    [handle]="true"
+    (didDismiss)="paymentModalOpen = false"
+  >
+    <ng-template>
+      <ion-content class="payment-modal-content">
+      <div class="payment-modal-body ion-padding">
+        <h2>Ընտրեք վճարման եղանակը</h2>
+
+        <div class="section-title">Պահված քարտեր</div>
+        @if (savedCards.length) {
+          <div class="payment-list">
+            @for (card of savedCards; track card.id) {
+              <button
+                type="button"
+                class="payment-item"
+                [class.selected]="selectedCardId === card.id"
+                (click)="selectCard(card.id)"
+              >
+                <div class="payment-item-left">
+                  <ion-icon
+                    [name]="card.brand === 'visa' ? 'card-outline' : 'card-outline'"
+                    class="payment-icon"
+                  ></ion-icon>
+                  <div>
+                    <div class="payment-title">{{ card.brand | uppercase }} •••• {{ card.last4 }}</div>
+                    <div class="payment-subtitle">{{ card.holderName }}</div>
+                  </div>
+                </div>
+              </button>
+            }
+          </div>
+        } @else {
+          <ion-note color="medium">Պահված քարտ դեռ չկա։</ion-note>
+        }
+
+        @if (!showAddCardForm) {
+          <ion-button expand="block" fill="outline" (click)="openAddCardForm()">
+            + Ավելացնել նոր քարտ
+          </ion-button>
+        } @else {
+          <form class="add-card-form" [formGroup]="cardForm">
+            <ion-item lines="full">
+              <ion-label position="stacked">Քարտապանի անուն</ion-label>
+              <ion-input formControlName="holderName"></ion-input>
+            </ion-item>
+            <ion-item lines="full">
+              <ion-label position="stacked">Քարտի համար</ion-label>
+              <ion-input formControlName="cardNumber"></ion-input>
+            </ion-item>
+            <div class="inline-actions">
+              <ion-button type="button" fill="outline" (click)="cancelAddCardForm()">Չեղարկել</ion-button>
+              <ion-button type="button" [disabled]="cardForm.invalid" (click)="saveCard()">Պահպանել քարտը</ion-button>
+            </div>
+          </form>
+        }
+
+        <div class="section-title">Այլ տարբերակներ</div>
+        <button
+          type="button"
+          class="payment-item"
+          [class.selected]="selectedPaymentMethod?.type === 'cash'"
+          (click)="selectCash()"
+        >
+          <div class="payment-item-left">
+            <ion-icon name="cash-outline" class="payment-icon"></ion-icon>
+            <div>
+              <div class="payment-title">Կանխիկ</div>
+              <div class="payment-subtitle">Վճարեք անմիջապես օգնականին</div>
+            </div>
+          </div>
+        </button>
+      </div>
+
+      <div class="payment-footer ion-padding">
+        <div class="price-row">
+          <span class="price-label">Ծառայության արժեք</span>
+          <span class="price-value">{{ servicePrice }} դրամ</span>
+        </div>
+        <ion-button
+          expand="block"
+          color="primary"
+          [disabled]="!isPaymentConfirmEnabled"
+          (click)="confirmPaymentAndContinue()"
+        >
+          Հաստատել
+        </ion-button>
+      </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+}
+
+@if (isCustomerDashboardRoute) {
+  <ion-modal
+    #locationPickerModal
+    [isOpen]="locationPickerOpen && isCustomerDashboardRoute"
+    cssClass="location-picker-modal"
+    [initialBreakpoint]="0.95"
+    [breakpoints]="[0, 0.95]"
+    [canDismiss]="true"
+    [handle]="true"
+    (didPresent)="onLocationPickerDidPresent()"
+    (didDismiss)="closeLocationPicker()"
+  >
+    <ng-template>
+      <ion-content class="location-picker-content">
+      <div class="location-picker-body ion-padding">
+        <h2>Ընտրեք լվացման վայրը</h2>
+        <div class="picker-map-wrapper">
+          <div #locationPickerMap class="location-picker-map"></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;border:1px solid #e5e7eb;border-radius:12px;padding:8px 12px;margin-top:10px;">
+          <ion-icon name="search-outline" color="medium"></ion-icon>
+          <ion-input
+            placeholder="Որոնել"
+            [(ngModel)]="manualAddress"
+            (ionInput)="onManualAddressInput($event)"
+          ></ion-input>
+        </div>
+        @if (placeSuggestions.length) {
+          <div class="place-suggestions">
+            @for (suggestion of placeSuggestions; track suggestion.placeId) {
+              <button
+                type="button"
+                class="place-suggestion-item"
+                (click)="selectPlaceSuggestion(suggestion)"
+              >
+                {{ suggestion.description }}
+              </button>
+            }
+          </div>
+        }
+        @if (pickerSelectedLocation) {
+          <ion-note color="success">Ընտրված է՝ {{ pickerSelectedLocation.address }}</ion-note>
+        } @else {
+          <ion-note color="medium">Սեղմեք քարտեզի վրա՝ տեղադրություն ընտրելու համար։</ion-note>
+        }
+      </div>
+
+      <div class="location-picker-footer ion-padding">
+        <ion-button expand="block" color="primary" (click)="confirmPickedLocation()">
+          Հաստատել տեղադրությունը
+        </ion-button>
+      </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+}

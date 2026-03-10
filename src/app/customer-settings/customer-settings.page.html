@@ -1,0 +1,194 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Հաճախորդի կարգավորումներ</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Անձնական տվյալներ</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      @if (loadingProfile) {
+        <ion-spinner name="crescent"></ion-spinner>
+      } @else {
+        <p>Էլ. փոստ՝ {{ profile?.email || '-' }}</p>
+        <p>Դեր՝ {{ profile?.role || '-' }}</p>
+      }
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Պատվերի տվյալներ</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <p>Պատվերների քանակ՝ {{ ordersCount }}</p>
+      <ion-button size="small" fill="outline" routerLink="/order-history">Բացել պատմությունը</ion-button>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Իմ վճարման եղանակները</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-button size="small" (click)="openAddCardModal()">Ավելացնել նոր քարտ</ion-button>
+      @if (loadingCards) {
+        <div class="loading-row"><ion-spinner name="crescent"></ion-spinner></div>
+      }
+      @for (card of cards; track card.id) {
+        <ion-item>
+          <ion-icon [name]="cardIcon(card.brand)" slot="start"></ion-icon>
+          <ion-label>
+            <h3>{{ cardMask(card.last4) }}</h3>
+            <p>{{ card.holderName }} • {{ card.expiryMonth }}/{{ card.expiryYear }}</p>
+            @if (card.isDefault) { <ion-note color="success">Լռելյայն</ion-note> }
+          </ion-label>
+          @if (!card.isDefault) {
+            <ion-button size="small" fill="clear" (click)="setDefaultCard(card.id)">Լռելյայն</ion-button>
+          }
+          <ion-button color="danger" fill="clear" (click)="deleteCard(card.id)">Հեռացնել</ion-button>
+        </ion-item>
+      }
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Իմ մեքենաները</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-button size="small" (click)="openAddCarModal()">Ավելացնել նոր մեքենա</ion-button>
+      @if (loadingCars) {
+        <div class="loading-row"><ion-spinner name="crescent"></ion-spinner></div>
+      }
+      @for (car of cars; track car.id) {
+        <ion-item>
+          <ion-label>
+            <h3>{{ car.model }}</h3>
+            <p>{{ car.plateNumber }}</p>
+          </ion-label>
+          <ion-button color="danger" fill="clear" (click)="removeCar(car.id)">Հեռացնել</ion-button>
+        </ion-item>
+      }
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Իմ տեղադրությունները</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-button size="small" (click)="openAddLocationModal()">Ավելացնել տեղադրություն</ion-button>
+      @if (loadingLocations) {
+        <div class="loading-row"><ion-spinner name="crescent"></ion-spinner></div>
+      }
+      @for (location of locations; track location.id) {
+        <ion-item>
+          <ion-label>
+            <h3>{{ location.address }}</h3>
+          </ion-label>
+          <ion-button color="danger" fill="clear" (click)="removeLocation(location.id)">Հեռացնել</ion-button>
+        </ion-item>
+      }
+    </ion-card-content>
+  </ion-card>
+
+  <ion-button expand="block" fill="outline" (click)="backToDashboard()">
+    Վերադառնալ վահանակ
+  </ion-button>
+</ion-content>
+
+<ion-modal [isOpen]="cardModalOpen" (didDismiss)="closeAddCardModal()">
+  <ng-template>
+    <ion-content class="ion-padding">
+      <h2>Նոր քարտ</h2>
+      <form [formGroup]="cardForm">
+        <ion-item>
+          <ion-label position="stacked">Քարտապանի անուն</ion-label>
+          <ion-input formControlName="holderName"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Քարտի համար</ion-label>
+          <ion-input formControlName="cardNumber" inputmode="numeric"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Վավեր՝ MM/YY</ion-label>
+          <ion-input formControlName="expiry" placeholder="12/28"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">CVC</ion-label>
+          <ion-input formControlName="cvc" inputmode="numeric"></ion-input>
+        </ion-item>
+      </form>
+      <ion-button expand="block" [disabled]="cardForm.invalid || addingCard" (click)="saveCard()">
+        Պահպանել
+      </ion-button>
+    </ion-content>
+  </ng-template>
+</ion-modal>
+
+<ion-modal [isOpen]="carModalOpen" (didDismiss)="closeAddCarModal()">
+  <ng-template>
+    <ion-content class="ion-padding">
+      <h2>Նոր մեքենա</h2>
+      <form [formGroup]="carForm">
+        <ion-item>
+          <ion-label position="stacked">Ապրանքանիշ</ion-label>
+          <ion-select formControlName="brandId" interface="modal">
+            @for (brand of brands; track brand.id) {
+              <ion-select-option [value]="brand.id">{{ brand.name }}</ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Մոդել</ion-label>
+          <ion-select formControlName="modelId" interface="modal" [disabled]="!carForm.get('brandId')?.value || loadingModels">
+            @for (model of models; track model.id) {
+              <ion-select-option [value]="model.id">{{ model.name }}</ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Համարանիշ</ion-label>
+          <ion-input formControlName="plateNumber" (ionInput)="onPlateInput($event)"></ion-input>
+        </ion-item>
+      </form>
+      <ion-button expand="block" [disabled]="carForm.invalid || addingCar" (click)="saveCar()">
+        Պահպանել
+      </ion-button>
+    </ion-content>
+  </ng-template>
+</ion-modal>
+
+<ion-modal [isOpen]="locationModalOpen" (didDismiss)="closeAddLocationModal()">
+  <ng-template>
+    <ion-content class="ion-padding">
+      <h2>Նոր տեղադրություն</h2>
+      <form [formGroup]="locationForm">
+        <ion-item>
+          <ion-label position="stacked">Հասցե</ion-label>
+          <ion-input
+            formControlName="address"
+            placeholder="Սկսեք մուտքագրել հասցեն"
+            (ionInput)="onLocationInput($event)"
+          ></ion-input>
+        </ion-item>
+      </form>
+      @if (locationSuggestions.length) {
+        <div class="suggestions">
+          @for (suggestion of locationSuggestions; track suggestion.placeId) {
+            <button type="button" class="suggestion-item" (click)="selectLocationSuggestion(suggestion)">
+              {{ suggestion.description }}
+            </button>
+          }
+        </div>
+      }
+      <ion-button expand="block" [disabled]="locationForm.invalid || !selectedLocationDraft || addingLocation" (click)="saveLocation()">
+        Պահպանել
+      </ion-button>
+    </ion-content>
+  </ng-template>
+</ion-modal>

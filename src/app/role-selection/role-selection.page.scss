@@ -1,0 +1,31 @@
+.role-content {
+  --background: #f6f7fb;
+}
+
+.role-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+h2 {
+  margin: 0 0 6px;
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+p {
+  margin: 0 0 16px;
+  color: #6b7280;
+}
+
+ion-button {
+  --border-radius: 14px;
+  height: 46px;
+  font-weight: 700;
+}
+
+ion-button + ion-button {
+  margin-top: 10px;
+}
