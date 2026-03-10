@@ -8,7 +8,7 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const jwtSecret = process.env.JWT_SECRET || '';
-  if (!jwtSecret || jwtSecret.startsWith('CHANGE_ME')) {
+  if (!jwtSecret || jwtSecret.startsWith(process.env.JWT_SECRET)) {
     throw new Error('JWT_SECRET is missing or insecure. Set a strong value in environment.');
   }
 

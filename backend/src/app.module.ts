@@ -25,8 +25,8 @@ import { CarModel } from './users/car-model.entity';
       useFactory: (config: ConfigService) => ({
         throttlers: [
           {
-            ttl: Number(config.get('THROTTLE_TTL') || 60) * 1000,
-            limit: Number(config.get('THROTTLE_LIMIT') || 120),
+            ttl: Number(config.get(process.env.THROTTLE_TTL) || 60) * 1000,
+            limit: Number(config.get(process.env.THROTTLE_LIMIT) || 120),
           },
         ],
       }),

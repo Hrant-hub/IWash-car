@@ -33,6 +33,8 @@ log.txt
 /node_modules
 npm-debug.log
 yarn-error.log
+backend/node_modules
+backend/dist
 
 # Secrets and local environment
 .env
